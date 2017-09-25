@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "D3DTest.h"
 #include "eawebkit.h"
+#include <Windowsx.h>
 
 #define MAX_LOADSTRING 100
 
@@ -73,6 +74,13 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 
     DXContexts dxc = { g_pd3dDevice, g_pImmediateContext };
     ui_init(dxc);
+
+    // fix window size at startup
+    {
+        RECT rect;
+        GetClientRect(g_hWnd, &rect);
+        ui_resize(rect.right - rect.left, rect.bottom - rect.top);
+    }
 
 	// Main message loop:
 	while (WM_QUIT != msg.message)
@@ -162,6 +170,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	PAINTSTRUCT ps;
 	HDC hdc;
 
+    int xPos = GET_X_LPARAM(lParam);
+    int yPos = GET_Y_LPARAM(lParam);
+
 	switch (message)
 	{
 	case WM_COMMAND:
@@ -181,19 +192,44 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         ui_mousemove(LOWORD(lParam), HIWORD(lParam));
         break;
     case WM_LBUTTONDOWN:
-        ui_mousbutton(0, true);
+        ui_mousebutton(xPos, yPos, 0, true);
         break;
     case WM_LBUTTONUP:
-        ui_mousbutton(0, false);
+        ui_mousebutton(xPos, yPos, 0, false);
         break;
     case WM_RBUTTONDOWN:
-        ui_mousbutton(1, true);
+        ui_mousebutton(xPos, yPos, 2, true);
         break;
     case WM_RBUTTONUP:
-        ui_mousbutton(1, false);
+        ui_mousebutton(xPos, yPos, 2, false);
+        break;
+    case WM_MBUTTONDOWN:
+        ui_mousebutton(xPos, yPos, 1, true);
+        break;
+    case WM_MBUTTONUP:
+        ui_mousebutton(xPos, yPos, 1, false);
+        break;
+    case WM_MOUSEWHEEL: {
+        int fwKeys = GET_KEYSTATE_WPARAM(wParam);
+        int zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
+        ui_mousewheel(xPos, yPos, fwKeys, zDelta);
+        break;
+    }
+    case WM_CHAR:
+        ui_keyboard(wParam, true, true);
+        break;
+    case WM_KEYDOWN:
+        if (wParam == VK_F5) {
+            ui_reload();
+            break;
+        }
+        ui_keyboard(wParam, false, true);
+        break;
+    case WM_KEYUP:
+        ui_keyboard(wParam, false, false);
         break;
 
-	case WM_PAINT:
+    case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
 		// TODO: Add any drawing code here...
 		EndPaint(hWnd, &ps);

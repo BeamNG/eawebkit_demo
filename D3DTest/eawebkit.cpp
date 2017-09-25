@@ -259,7 +259,8 @@ void ui_init(DXContexts& dxc) {
     vp.mDisplaySurface = new DX11Surface(dxc);
     vp.mWidth = 1920;
     vp.mHeight = 768;
-    //vp.mTileSize = 32;
+    vp.mBackgroundColor = 0xffffffff;
+    vp.mTileSize = 32;
     //vp.mUseTiledBackingStore = true;
     v->InitView(vp);
 
@@ -371,7 +372,7 @@ void ui_update() {
 
     wk->Tick();
     
-    //v->ForceInvalidateFullView();
+    v->ForceInvalidateFullView();
     v->Paint();
 
     //v->SaveSurfacePNG("test.png");
@@ -382,25 +383,48 @@ void ui_resize(int width, int height) {
     v->SetSize(EA::WebKit::IntSize(width, height));
 }
 
-int mouse_last_x = 0;
-int mouse_last_y = 0;
-
 void ui_mousemove(int x, int y) {
     if (!v) return;
     EA::WebKit::MouseMoveEvent e = {};
     e.mX = x;
     e.mY = y;
-    mouse_last_x = x;
-    mouse_last_y = y;
     v->OnMouseMoveEvent(e);
 }
 
-void ui_mousbutton(int btn, bool depressed) {
+void ui_mousebutton(int x, int y, int btn, bool depressed) {
     if (!v) return;
     EA::WebKit::MouseButtonEvent e = {};
     e.mId = btn;
-    e.mX = mouse_last_x;
-    e.mY = mouse_last_y;
+    e.mX = x;
+    e.mY = y;
     e.mbDepressed = depressed;
     v->OnMouseButtonEvent(e);
+}
+
+
+void ui_mousewheel(int x, int y, int keys, int delta) {
+    if (!v) return;
+    EA::WebKit::MouseWheelEvent e = {};
+    e.mX = x;
+    e.mY = y;
+    e.mZDelta = delta;
+
+    UINT scrollLines = 1;
+    SystemParametersInfoA(SPI_GETWHEELSCROLLLINES, 0, &scrollLines, 0);
+    e.mNumLines = ((delta * (int32_t)scrollLines) / (int32_t)WHEEL_DELTA);
+    v->OnMouseWheelEvent(e);
+}
+
+void ui_keyboard(int id, bool ischar, bool depressed) {
+    if (!v) return;
+    EA::WebKit::KeyboardEvent e = {};
+    e.mId = id;
+    e.mbChar = ischar;
+    e.mbDepressed = depressed;
+    v->OnKeyboardEvent(e);
+}
+
+void ui_reload() {
+    if (!v) return;
+    v->Refresh();
 }

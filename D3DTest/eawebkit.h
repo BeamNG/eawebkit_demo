@@ -19,4 +19,7 @@ void ui_init(DXContexts& dxc);
 void ui_update();
 void ui_resize(int width, int height);
 void ui_mousemove(int x, int y);
-void ui_mousbutton(int btn, bool depressed);
+void ui_mousebutton(int x, int y, int btn, bool depressed);
+void ui_mousewheel(int x, int y, int keys, int delta);
+void ui_keyboard(int id, bool ischar, bool depressed);
+void ui_reload();
