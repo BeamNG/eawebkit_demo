@@ -21,8 +21,12 @@
 <div style="margin:5px; border: 10px dashed green;width:80px;height:80px;border-radius:40px;"></div>
 <div style="margin:5px; border: 5px dashed blue;width:80px;height:80px;background: linear-gradient(red, yellow);"></div>
 
+<h1>Text test</h1>
+<b>Hello</b> world! 
+
+
 <h1>JS test</h1>
-Hello world! 
+<!--
 <div id="counter"></div>
 <script>
 (function() {
@@ -33,9 +37,21 @@ setInterval(function () {
 }, 1000);
 })();
 </script>
+-->
+
 <h1>Input test</h1>
-<input type="text" value="test" />
-<input type="button" value="button">
+<form onsubmit="changeURL()">
+<input type="text" value="http://www.google.com" name="newURL" />
+<input type="submit" value=">">
+</form>
+<script>
+function changeURL() {
+console.log("hello world!");
+//document.getElementByName("newURL").value = document.location.href;
+//alert(document.getElementByName("newURL").value);
+}
+</script>
+
 <h1>SVG Test</h1>
 <svg width="300" height="200">
   <polygon points="100,10 40,198 190,78 10,78 160,198"
