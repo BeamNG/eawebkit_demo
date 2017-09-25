@@ -14,6 +14,7 @@
 #include <array>
 
 #include <Shlwapi.h>
+#include "EAWebkit/EAWebKitTextInterface.h"
 #pragma comment(lib, "shlwapi.lib")
 
 HRESULT CompileShaderFromFile(WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut);
@@ -243,7 +244,8 @@ void initUI(DXContexts& dxc) {
     wk = create_webkit_instance();
     wk->Init(&callbacks, &systems);
 
-    //EA::Text::FontServer* font_server = EA::Text::GetFontServer(true); // compilation error with this
+    EA::WebKit::ITextSystem* ts = wk->GetTextSystem();
+    ts->Init();
 
     EA::WebKit::Parameters& params = wk->GetParameters();
     params.mEAWebkitLogLevel = 1337;
@@ -255,7 +257,7 @@ void initUI(DXContexts& dxc) {
     EA::WebKit::ViewParameters vp;
     vp.mHardwareRenderer = new DX11Renderer(dxc);
     vp.mDisplaySurface = new DX11Surface(dxc);
-    vp.mTileSize = 32;
+    //vp.mTileSize = 32;
     //vp.mUseTiledBackingStore = true;
     v->InitView(vp);
 
