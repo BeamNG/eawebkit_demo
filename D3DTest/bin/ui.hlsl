@@ -14,6 +14,8 @@ struct VS_OUTPUT
 cbuffer baseCBuffer : register (b0)
 {
     matrix transform;
+    float2 screensize;
+    float2 padding;
 }
 
 Texture2D baseTexture;
@@ -23,6 +25,9 @@ VS_OUTPUT main_vs(VS_INPUT input)
 {
     VS_OUTPUT output;
     output.pos = mul(transform, float4(input.pos, 0, 1));
+    output.pos.xy /= screensize;
+    output.pos.y = 1 - output.pos.y;
+    output.pos.xy = output.pos.xy * 2 - 1;
     output.uv0 = input.uv0;
 
     return output;

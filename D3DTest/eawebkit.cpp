@@ -141,6 +141,13 @@ protected:
 
 };
 
+struct UIShaderData 
+{
+    EA::WebKit::TransformationMatrix matrix;
+    EA::WebKit::FloatSize screenSize;
+    float padding[2];
+};
+
 class DX11Renderer : public EA::WebKit::IHardwareRenderer {
     DXContexts& dxc;
 public:
@@ -164,15 +171,28 @@ public:
 
     virtual void RenderSurface(EA::WebKit::ISurface *surface, EA::WebKit::FloatRect &target, EA::WebKit::TransformationMatrix &matrix, float opacity, EA::WebKit::CompositOperator op, EA::WebKit::TextureWrapMode wrap, EA::WebKit::Filters &filters) override {
         DX11Surface *d3dSurface = static_cast<DX11Surface*>(surface);
+        const EA::WebKit::IntSize size = v->GetSize();
+        float x1 = target.mSize.mWidth;
+        float y1 = target.mSize.mHeight;
 
-        matrix.mComponents[3][0] = ((matrix.mComponents[3][0] + target.mLocation.mX) / 1900.0f);
-        matrix.mComponents[3][1] = ((matrix.mComponents[3][1] + target.mLocation.mY) / 1080.0f);
-        
-        auto mScale = DirectX::XMMatrixScaling(target.mSize.mWidth / 1900.0f, target.mSize.mHeight / 1080.0f, 1);
-        mScale = DirectX::XMMatrixMultiply(mScale, *((DirectX::XMMATRIX*)&matrix));
+        float vertices[] = {
+            //float2 pos, float2 uv
+            0, 0, 0, 0,
+            x1, 0, 1, 0,
+            x1, y1, 1, 1,
+
+            0, 0, 0, 0,
+            x1, y1, 1, 1,
+            0, y1, 0, 1,
+        };
+        dxc.ctx->UpdateSubresource(dxc.vBuffer, 0, nullptr, vertices, sizeof(float[4]) * 6, 0);
+
+        UIShaderData cbufferData;
+        cbufferData.matrix = matrix;
+        cbufferData.screenSize = EA::WebKit::FloatSize(v->GetSize().mWidth, v->GetSize().mHeight);
 
         dxc.ctx->PSSetShaderResources(0, 1, &d3dSurface->view);
-        dxc.ctx->UpdateSubresource(dxc.cbuffer, 0, nullptr, &mScale, sizeof(float[16]), 0);
+        dxc.ctx->UpdateSubresource(dxc.cbuffer, 0, nullptr, &cbufferData, sizeof(cbufferData), 0);
         dxc.ctx->Draw(6, 0);
     }
 
@@ -294,7 +314,7 @@ void ui_init(DXContexts& dxc) {
     vp.mHeight = 768;
     vp.mBackgroundColor = 0xffffffff;
     vp.mTileSize = 32;
-    //vp.mUseTiledBackingStore = true;
+    vp.mUseTiledBackingStore = true;
     v->InitView(vp);
 
     //v->SetDrawDebugVisuals(true);
@@ -331,7 +351,7 @@ void ui_init(DXContexts& dxc) {
         D3D11_BUFFER_DESC desc = {};
         desc.Usage = D3D11_USAGE_DEFAULT;
         desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-        desc.ByteWidth = sizeof(float[16]);
+        desc.ByteWidth = sizeof(UIShaderData);
         desc.CPUAccessFlags = 0;
         desc.MiscFlags = 0;
         desc.StructureByteStride = 0;
@@ -382,21 +402,6 @@ void ui_init(DXContexts& dxc) {
         desc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
         desc.Filter = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
         dxc.dev->CreateSamplerState(&desc, &dxc.samplerState);
-    }
-
-    {
-        float vertices[] = {
-            //float2 pos, float2 uv
-            -1, -1, 0, 1,
-             1,  1, 1, 0,
-             1, -1, 1, 1,
-
-            -1, -1, 0, 1,
-            -1,  1, 0, 0,
-             1,  1, 1, 0,
-        };
-
-        dxc.ctx->UpdateSubresource(dxc.vBuffer, 0, nullptr, vertices, sizeof(float[4]) * 6, 0);
     }
 }
 
