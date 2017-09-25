@@ -215,6 +215,11 @@ void initUI(DXContexts& dxc) {
         create_webkit_instance = reinterpret_cast<PF_CreateEAWebkitInstance>(GetProcAddress(wdll, "CreateEAWebkitInstance"));
     }
 
+    if (!create_webkit_instance) {
+        printf("EAWebkit.dll missing\n");
+        exit(1);
+    }
+
     wk = create_webkit_instance();
     wk->Init(&callbacks, &systems);
 
