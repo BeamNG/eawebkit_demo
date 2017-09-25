@@ -144,9 +144,7 @@ protected:
 
 struct UIShaderData 
 {
-    EA::WebKit::TransformationMatrix matrix;
-    EA::WebKit::FloatSize screenSize;
-    float padding[2];
+    DirectX::XMMATRIX matrix;
 };
 
 class DX11Renderer : public EA::WebKit::IHardwareRenderer {
@@ -173,24 +171,26 @@ public:
     virtual void RenderSurface(EA::WebKit::ISurface *surface, EA::WebKit::FloatRect &target, EA::WebKit::TransformationMatrix &matrix, float opacity, EA::WebKit::CompositOperator op, EA::WebKit::TextureWrapMode wrap, EA::WebKit::Filters &filters) override {
         DX11Surface *d3dSurface = static_cast<DX11Surface*>(surface);
         const EA::WebKit::IntSize size = v->GetSize();
-        float x1 = target.mSize.mWidth;
-        float y1 = target.mSize.mHeight;
+        float x0 = target.mLocation.mX;
+        float y0 = target.mLocation.mY;
+        float x1 = target.mLocation.mX + target.mSize.mWidth;
+        float y1 = target.mLocation.mY + target.mSize.mHeight;
 
         float vertices[] = {
             //float2 pos, float2 uv
-            0, 0, 0, 0,
-            x1, 0, 1, 0,
+            x0, y0, 0, 0,
+            x1, y0, 1, 0,
             x1, y1, 1, 1,
 
-            0, 0, 0, 0,
+            x0, y0, 0, 0,
             x1, y1, 1, 1,
-            0, y1, 0, 1,
+            x0, y1, 0, 1,
         };
         dxc.ctx->UpdateSubresource(dxc.vBuffer, 0, nullptr, vertices, sizeof(float[4]) * 6, 0);
 
         UIShaderData cbufferData;
-        cbufferData.matrix = matrix;
-        cbufferData.screenSize = EA::WebKit::FloatSize(v->GetSize().mWidth, v->GetSize().mHeight);
+        auto projMatrix = DirectX::XMMatrixOrthographicOffCenterLH(0, v->GetSize().mWidth, 0, v->GetSize().mHeight, 0.1, 1);
+        cbufferData.matrix = DirectX::XMMatrixMultiply(*((DirectX::XMMATRIX*)&matrix), projMatrix);
 
         dxc.ctx->PSSetShaderResources(0, 1, &d3dSurface->view);
         dxc.ctx->UpdateSubresource(dxc.cbuffer, 0, nullptr, &cbufferData, sizeof(cbufferData), 0);
