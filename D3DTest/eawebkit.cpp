@@ -31,6 +31,8 @@ THE SOFTWARE.
 #include <EAWebKit/EAWebKitView.h>
 #include <EAText/EAText.h>
 
+#include <DirectXMath.h>
+
 #include <stdio.h>
 
 #include <windows.h> // LoadLibraryA
@@ -162,8 +164,15 @@ public:
 
     virtual void RenderSurface(EA::WebKit::ISurface *surface, EA::WebKit::FloatRect &target, EA::WebKit::TransformationMatrix &matrix, float opacity, EA::WebKit::CompositOperator op, EA::WebKit::TextureWrapMode wrap, EA::WebKit::Filters &filters) override {
         DX11Surface *d3dSurface = static_cast<DX11Surface*>(surface);
+
+        matrix.mComponents[3][0] = ((matrix.mComponents[3][0] + target.mLocation.mX) / 1900.0f);
+        matrix.mComponents[3][1] = ((matrix.mComponents[3][1] + target.mLocation.mY) / 1080.0f);
+        
+        auto mScale = DirectX::XMMatrixScaling(target.mSize.mWidth / 1900.0f, target.mSize.mHeight / 1080.0f, 1);
+        mScale = DirectX::XMMatrixMultiply(mScale, *((DirectX::XMMATRIX*)&matrix));
+
         dxc.ctx->PSSetShaderResources(0, 1, &d3dSurface->view);
-        dxc.ctx->UpdateSubresource(dxc.cbuffer, 0, nullptr, &matrix, sizeof(float[16]), 0);
+        dxc.ctx->UpdateSubresource(dxc.cbuffer, 0, nullptr, &mScale, sizeof(float[16]), 0);
         dxc.ctx->Draw(6, 0);
     }
 
