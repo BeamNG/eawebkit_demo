@@ -72,7 +72,7 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 	}
 
     DXContexts dxc = { g_pd3dDevice, g_pImmediateContext };
-    initUI(dxc);
+    ui_init(dxc);
 
 	// Main message loop:
 	while (WM_QUIT != msg.message)
@@ -177,11 +177,32 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			return DefWindowProc(hWnd, message, wParam, lParam);
 		}
 		break;
+    case WM_MOUSEMOVE:
+        ui_mousemove(LOWORD(lParam), HIWORD(lParam));
+        break;
+    case WM_LBUTTONDOWN:
+        ui_mousbutton(0, true);
+        break;
+    case WM_LBUTTONUP:
+        ui_mousbutton(0, false);
+        break;
+    case WM_RBUTTONDOWN:
+        ui_mousbutton(1, true);
+        break;
+    case WM_RBUTTONUP:
+        ui_mousbutton(1, false);
+        break;
+
 	case WM_PAINT:
 		hdc = BeginPaint(hWnd, &ps);
 		// TODO: Add any drawing code here...
 		EndPaint(hWnd, &ps);
 		break;
+    case WM_SIZE:
+        RECT rect;
+        GetClientRect(hWnd, &rect);
+        ui_resize(rect.right - rect.left, rect.bottom - rect.top);
+        break;
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;
@@ -510,7 +531,7 @@ void Render()
     g_pImmediateContext->IASetInputLayout(g_pVertexLayout);
 	g_pImmediateContext->DrawIndexed(36, 0, 0);
 
-    updateUI();
+    ui_update();
 
 	// Present our back buffer to our front buffer
 	g_pSwapChain->Present(0, 0);
