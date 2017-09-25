@@ -218,7 +218,7 @@ void initUI(DXContexts& dxc) {
     wk = create_webkit_instance();
     wk->Init(&callbacks, &systems);
 
-    EA::Text::FontServer* font_server = EA::Text::GetFontServer(true);
+    //EA::Text::FontServer* font_server = EA::Text::GetFontServer(true); // compilation error with this
 
     EA::WebKit::Parameters& params = wk->GetParameters();
     params.mEAWebkitLogLevel = 1337;
@@ -291,7 +291,7 @@ void initUI(DXContexts& dxc) {
         res = CompileShaderFromFile(L"ui.hlsl", "main_vs", "vs_4_0", &blob);
         assert(SUCCEEDED(res));
 
-        res = dxc.dev->CreateInputLayout(desc.data(), desc.size(), blob->GetBufferPointer(), blob->GetBufferSize(), &dxc.inputLayout);
+        res = dxc.dev->CreateInputLayout(desc.data(), (UINT)desc.size(), blob->GetBufferPointer(), blob->GetBufferSize(), &dxc.inputLayout);
         assert(SUCCEEDED(res));
 
         res = dxc.dev->CreateVertexShader(blob->GetBufferPointer(), blob->GetBufferSize(), nullptr, &dxc.vShader);

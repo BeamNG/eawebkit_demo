@@ -3,14 +3,6 @@
 #include <d3d11.h>
 
 
-#define EATEXT_IN_DLL
-#define INSPECTOR
-#define INSPECTOR_SERVER
-#define JAVASCRIPT_DEBUGGER
-#define EATEXT_FONT_SERVER_ENABLED 1
-#define EAWEBKIT_ASSERT_ENABLED 1
-#define EATEXT_EMBEDDED_BACKUP_FONT_ENABLED 1
-
 
 struct DXContexts {
     ID3D11Device* dev = nullptr;
