@@ -394,7 +394,7 @@ void ui_init(DXContexts& dxc) {
     EA::WebKit::Parameters& params = wk->GetParameters();
     params.mEAWebkitLogLevel = 1337;
     params.mHttpManagerLogLevel = 1337;
-    params.mRemoteWebInspectorPort = 9222;
+    params.mRemoteWebInspectorPort = 6000;
 
     // attention: you need to load all the fonts that are set, otherwise the renderer will crash
     wcscpy((wchar_t*)params.mFontFamilyStandard, L"Roboto");
@@ -413,7 +413,7 @@ void ui_init(DXContexts& dxc) {
     vp.mWidth = 1920;
     vp.mHeight = 768;
     vp.mBackgroundColor = 0xffffffff;
-    vp.mTileSize = 32;
+    vp.mTileSize = 512;
     vp.mUseTiledBackingStore = true;
     v->InitView(vp);
 
