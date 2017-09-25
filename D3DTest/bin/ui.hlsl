@@ -30,5 +30,5 @@ VS_OUTPUT main_vs(VS_INPUT input)
 
 float4 main_ps(VS_OUTPUT input) : SV_Target
 {
-    return baseTexture.Sample(baseSampler, input.uv0);
+    return baseTexture.Sample(baseSampler, input.uv0).bgra;
 }
