@@ -16,5 +16,16 @@
 <div style="margin:5px; border: 15px dashed red;width:80px;height:80px;animation: 1s animateBorder infinite;animation-direction: alternate-reverse"></div>
 <div style="margin:5px; border: 10px dashed green;width:80px;height:80px;border-radius:40px;"></div>
 <div style="margin:5px; border: 5px dashed blue;width:80px;height:80px;background: linear-gradient(red, yellow);"></div>
+
+<div id="counter"></div>
+<script>
+(function() {
+var c = 0;
+setInterval(function () {
+	c += 1;
+	document.getElementById("counter").innerHTML = c;
+}, 1000);
+})();
+</script>
 </body>
 </html>
