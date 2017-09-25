@@ -92,7 +92,7 @@ protected:
         desc.Width = width;
         desc.Height = height;
         desc.MipLevels = desc.ArraySize = 1;
-        desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
         desc.SampleDesc.Count = 1;
         desc.Usage = D3D11_USAGE_DYNAMIC;
         desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
@@ -103,7 +103,7 @@ protected:
         assert(SUCCEEDED(res));
 
         D3D11_SHADER_RESOURCE_VIEW_DESC descView = {};
-        descView.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        descView.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
         descView.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
         descView.Texture2D.MipLevels = 1;
         descView.Texture2D.MostDetailedMip = 0;
@@ -315,7 +315,7 @@ void initUI(DXContexts& dxc) {
         desc[1].SemanticIndex = 0;
         desc[1].Format = DXGI_FORMAT_R32G32_FLOAT;
         desc[1].InputSlot = 0;
-        desc[1].AlignedByteOffset = 0;
+        desc[1].AlignedByteOffset = 8;
         desc[1].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
         desc[1].InstanceDataStepRate = 0;
 
@@ -349,13 +349,13 @@ void initUI(DXContexts& dxc) {
     {
         float vertices[] = {
             //float2 pos, float2 uv
-            -1, -1, 0, 0,
-             1,  1, 1, 1,
-             1, -1, 1, 0,
+            -1, -1, 0, 1,
+             1,  1, 1, 0,
+             1, -1, 1, 1,
 
-            -1, -1, 0, 0,
-            -1,  1, 0, 1,
-             1,  1, 1, 1,
+            -1, -1, 0, 1,
+            -1,  1, 0, 0,
+             1,  1, 1, 0,
         };
 
         dxc.ctx->UpdateSubresource(dxc.vBuffer, 0, nullptr, vertices, sizeof(float[4]) * 6, 0);
