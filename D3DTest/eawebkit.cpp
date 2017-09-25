@@ -255,12 +255,12 @@ void initUI(DXContexts& dxc) {
     EA::WebKit::ViewParameters vp;
     vp.mHardwareRenderer = new DX11Renderer(dxc);
     vp.mDisplaySurface = new DX11Surface(dxc);
-    //vp.mUseTiledBackingStore = false;
+    vp.mTileSize = 32;
+    //vp.mUseTiledBackingStore = true;
     v->InitView(vp);
 
-    v->SetDrawDebugVisuals(true);
-    v->ShowInspector(true);
-    //v->SetBeingDebugged(true);
+    //v->SetDrawDebugVisuals(true);
+    //v->ShowInspector(true);
 
     //v->SetURI("http://html5test.com/");
     
@@ -365,13 +365,10 @@ void initUI(DXContexts& dxc) {
 void updateUI() {
     if (!wk || !v) return;
 
-    // set vertex buffer
-
     wk->Tick();
     
     //v->ForceInvalidateFullView();
     v->Paint();
-
 
     //v->SaveSurfacePNG("test.png");
 }
