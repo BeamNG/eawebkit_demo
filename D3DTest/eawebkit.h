@@ -36,6 +36,7 @@ struct DXContexts {
     ID3D11VertexShader *vShader = nullptr;
     ID3D11PixelShader *pShader = nullptr;
     ID3D11SamplerState *samplerState = nullptr;
+    HWND hwnd = 0;
 };
 
 void ui_init(DXContexts& dxc);

@@ -41,6 +41,7 @@ THE SOFTWARE.
 
 #include <Shlwapi.h>
 #include "EAWebkit/EAWebKitTextInterface.h"
+#include <vector>
 #pragma comment(lib, "shlwapi.lib")
 
 HRESULT CompileShaderFromFile(WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut);
@@ -275,6 +276,94 @@ std::string replaceAll(std::string str, const std::string& from, const std::stri
     return str;
 }
 
+int getSystemFonts(std::vector<std::string>& fonts) {
+    static const LPWSTR fontRegistryPath = L"Software\\Microsoft\\Windows NT\\CurrentVersion\\Fonts";
+    HKEY hKey;
+    LONG result;
+
+    // Open Windows font registry key
+    result = RegOpenKeyEx(HKEY_LOCAL_MACHINE, fontRegistryPath, 0, KEY_READ, &hKey);
+    if (result != ERROR_SUCCESS) {
+        return 1;
+    }
+
+    DWORD maxValueNameSize = 0, maxValueDataSize = 0;
+    result = RegQueryInfoKey(hKey, 0, 0, 0, 0, 0, 0, 0, &maxValueNameSize, &maxValueDataSize, 0, 0);
+    if (result != ERROR_SUCCESS) {
+        return 1;
+    }
+
+    DWORD valueIndex = 0;
+    LPSTR valueName = new CHAR[maxValueNameSize];
+    LPBYTE valueData = new BYTE[maxValueDataSize];
+    DWORD valueNameSize, valueDataSize, valueType;
+
+
+    // Build full font file path
+    char winDir_[MAX_PATH] = "";
+    GetWindowsDirectoryA(winDir_, MAX_PATH);
+    std::string winDir = std::string(winDir_);
+    fonts.clear();
+
+    do {
+        valueDataSize = maxValueDataSize;
+        valueNameSize = maxValueNameSize;
+
+        result = RegEnumValueA(hKey, valueIndex, valueName, &valueNameSize, 0, &valueType, valueData, &valueDataSize);
+
+        valueIndex++;
+
+        if (result != ERROR_SUCCESS || valueType != REG_SZ) {
+            continue;
+        }
+
+        std::string wsValueName(valueName, valueNameSize);
+        std::string wsValueData((LPSTR)valueData, valueDataSize);
+
+        std::string fontPath = winDir + "\\Fonts\\" + wsValueData;
+        fonts.push_back(fontPath);
+
+    } while (result != ERROR_NO_MORE_ITEMS);
+
+    delete[] valueName;
+    delete[] valueData;
+
+    RegCloseKey(hKey);
+    return 0;
+}
+
+int add_ttf_font(const char* ttfFile) {
+    EA::WebKit::ITextSystem* ts = wk->GetTextSystem();
+    FILE* f = 0;
+    fopen_s(&f, ttfFile, "rb");
+    if (!f) return 1;
+    fseek(f, 0L, SEEK_END);
+    size_t fileSize = ftell(f);
+    fseek(f, 0L, SEEK_SET);
+    char* buffer = (char*)calloc(fileSize + 6, 1);
+    int read_bytes = fread(buffer, 1, fileSize, f);
+    if (read_bytes != fileSize) {
+        // error!
+        free(buffer);
+        return 0;
+    }
+    int res = ts->AddFace(buffer, fileSize);
+    free(buffer);
+    return res;
+}
+
+int init_system_fonts(DXContexts& dxc) {
+    std::vector<std::string> fonts;
+    if (getSystemFonts(fonts)) {
+        return 1;
+    }
+    int fonts_installed = 0;
+    for (int i = 0; i < fonts.size(); ++i) {
+        add_ttf_font(fonts[i].c_str());
+    }
+    return 0;
+}
+
 void ui_init(DXContexts& dxc) {
     
     // init the systems: using DefaultAllocator, DefaultFileSystem, no text/font support, DefaultThreadSystem
@@ -299,10 +388,20 @@ void ui_init(DXContexts& dxc) {
 
     EA::WebKit::ITextSystem* ts = wk->GetTextSystem();
     ts->Init();
+    //init_system_fonts(dxc);
+    //add_ttf_font("C:\\windows\\Fonts\\arial.ttf");
 
     EA::WebKit::Parameters& params = wk->GetParameters();
     params.mEAWebkitLogLevel = 1337;
     params.mHttpManagerLogLevel = 1337;
+
+    // attention: you need to load all the fonts that are set, otherwise the renderer will crash
+    wcscpy((wchar_t*)params.mFontFamilyStandard, L"Roboto");
+    wcscpy((wchar_t*)params.mFontFamilySerif, L"Roboto");
+    wcscpy((wchar_t*)params.mFontFamilyMonospace, L"Roboto");
+    wcscpy((wchar_t*)params.mFontFamilyCursive, L"Roboto");
+    wcscpy((wchar_t*)params.mFontFamilyFantasy, L"Roboto");
+
     wk->SetParameters(params);
 
     v = wk->CreateView();
@@ -320,14 +419,13 @@ void ui_init(DXContexts& dxc) {
     //v->SetDrawDebugVisuals(true);
     //v->ShowInspector(true);
 
-    //v->SetURI("http://html5test.com/");
+    v->SetURI("http://html5test.com/");
     
     //v->SetURI("about:version");
 
-    std::string exe_path = replaceAll(getExePath(), "\\", "/");
-    std::string html_path = "file:///" + exe_path + "/test.html";
-
-    v->SetURI(html_path.c_str());
+    //std::string exe_path = replaceAll(getExePath(), "\\", "/");
+    //std::string html_path = "file:///" + exe_path + "/test.html";
+    //v->SetURI(html_path.c_str());
 
     //const char test[] = "<div style='border:10px dashed red;'> </div>";
     //v->SetHtml(test, sizeof(test));
