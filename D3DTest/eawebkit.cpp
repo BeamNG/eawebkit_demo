@@ -13,6 +13,9 @@
 #include <assert.h>
 #include <array>
 
+#include <Shlwapi.h>
+#pragma comment(lib, "shlwapi.lib")
+
 HRESULT CompileShaderFromFile(WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut);
 
 EA::WebKit::EAWebKitLib* wk = nullptr;
@@ -201,6 +204,23 @@ public:
     }
 };
 
+
+std::string getExePath() {
+    char path[MAX_PATH] = "";
+    DWORD length = GetModuleFileNameA(NULL, path, MAX_PATH);
+    PathRemoveFileSpecA(path);
+    return std::string(path);
+}
+
+std::string replaceAll(std::string str, const std::string& from, const std::string& to) {
+    size_t start_pos = 0;
+    while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
+        str.replace(start_pos, from.length(), to);
+        start_pos += to.length(); // Handles case where 'to' is a substring of 'from'
+    }
+    return str;
+}
+
 void initUI(DXContexts& dxc) {
     
     // init the systems: using DefaultAllocator, DefaultFileSystem, no text/font support, DefaultThreadSystem
@@ -242,8 +262,15 @@ void initUI(DXContexts& dxc) {
     v->ShowInspector(true);
     //v->SetBeingDebugged(true);
 
-    v->SetURI("http://html5test.com/");
+    //v->SetURI("http://html5test.com/");
+    
     //v->SetURI("about:version");
+
+    std::string exe_path = replaceAll(getExePath(), "\\", "/");
+    std::string html_path = "file:///" + exe_path + "/test.html";
+
+    v->SetURI(html_path.c_str());
+
     //const char test[] = "<div style='border:10px dashed red;'> </div>";
     //v->SetHtml(test, sizeof(test));
 
