@@ -15,5 +15,8 @@ struct DXContexts {
     ID3D11SamplerState *samplerState = nullptr;
 };
 
-void initUI(DXContexts& dxc);
-void updateUI();
+void ui_init(DXContexts& dxc);
+void ui_update();
+void ui_resize(int width, int height);
+void ui_mousemove(int x, int y);
+void ui_mousbutton(int btn, bool depressed);

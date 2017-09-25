@@ -222,7 +222,7 @@ std::string replaceAll(std::string str, const std::string& from, const std::stri
     return str;
 }
 
-void initUI(DXContexts& dxc) {
+void ui_init(DXContexts& dxc) {
     
     // init the systems: using DefaultAllocator, DefaultFileSystem, no text/font support, DefaultThreadSystem
     struct EA::WebKit::AppSystems systems = { nullptr };
@@ -257,6 +257,8 @@ void initUI(DXContexts& dxc) {
     EA::WebKit::ViewParameters vp;
     vp.mHardwareRenderer = new DX11Renderer(dxc);
     vp.mDisplaySurface = new DX11Surface(dxc);
+    vp.mWidth = 1920;
+    vp.mHeight = 768;
     //vp.mTileSize = 32;
     //vp.mUseTiledBackingStore = true;
     v->InitView(vp);
@@ -364,7 +366,7 @@ void initUI(DXContexts& dxc) {
     }
 }
 
-void updateUI() {
+void ui_update() {
     if (!wk || !v) return;
 
     wk->Tick();
@@ -373,4 +375,32 @@ void updateUI() {
     v->Paint();
 
     //v->SaveSurfacePNG("test.png");
+}
+
+void ui_resize(int width, int height) {
+    if (!v) return;
+    v->SetSize(EA::WebKit::IntSize(width, height));
+}
+
+int mouse_last_x = 0;
+int mouse_last_y = 0;
+
+void ui_mousemove(int x, int y) {
+    if (!v) return;
+    EA::WebKit::MouseMoveEvent e = {};
+    e.mX = x;
+    e.mY = y;
+    mouse_last_x = x;
+    mouse_last_y = y;
+    v->OnMouseMoveEvent(e);
+}
+
+void ui_mousbutton(int btn, bool depressed) {
+    if (!v) return;
+    EA::WebKit::MouseButtonEvent e = {};
+    e.mId = btn;
+    e.mX = mouse_last_x;
+    e.mY = mouse_last_y;
+    e.mbDepressed = depressed;
+    v->OnMouseButtonEvent(e);
 }
