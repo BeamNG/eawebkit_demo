@@ -394,6 +394,7 @@ void ui_init(DXContexts& dxc) {
     EA::WebKit::Parameters& params = wk->GetParameters();
     params.mEAWebkitLogLevel = 1337;
     params.mHttpManagerLogLevel = 1337;
+    params.mRemoteWebInspectorPort = 9222;
 
     // attention: you need to load all the fonts that are set, otherwise the renderer will crash
     wcscpy((wchar_t*)params.mFontFamilyStandard, L"Roboto");
@@ -418,14 +419,16 @@ void ui_init(DXContexts& dxc) {
 
     //v->SetDrawDebugVisuals(true);
     //v->ShowInspector(true);
-
+    
     v->SetURI("http://html5test.com/");
     
     //v->SetURI("about:version");
 
-    //std::string exe_path = replaceAll(getExePath(), "\\", "/");
-    //std::string html_path = "file:///" + exe_path + "/test.html";
-    //v->SetURI(html_path.c_str());
+#if 0
+    std::string exe_path = replaceAll(getExePath(), "\\", "/");
+    std::string html_path = "file:///" + exe_path + "/test.html";
+    v->SetURI(html_path.c_str());
+#endif // 0
 
     //const char test[] = "<div style='border:10px dashed red;'> </div>";
     //v->SetHtml(test, sizeof(test));
