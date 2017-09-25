@@ -73,6 +73,7 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 	}
 
     DXContexts dxc = { g_pd3dDevice, g_pImmediateContext };
+    dxc.hwnd = g_hWnd;
     ui_init(dxc);
 
     // fix window size at startup
