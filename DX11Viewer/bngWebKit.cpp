@@ -88,13 +88,19 @@ void BeamNG::WebKit::init(DXContexts& dxc) {
         exit(1);
     }
 
+    {
+        // init winsock manually, this is required for some reason
+        WSADATA wsadata = {};
+        WSAStartup(MAKEWORD(2, 0), &wsadata);
+    }
+
     wk = create_Webkit_instance();
     wk->Init(&callbacks, &systems);
 
     EA::WebKit::Parameters& params = wk->GetParameters();
     params.mEAWebkitLogLevel = 1337;
     params.mHttpManagerLogLevel = 1337;
-    params.mRemoteWebInspectorPort = 8182;
+    params.mRemoteWebInspectorPort = 8282;
     params.mReportJSExceptionCallstacks = true;
 
     // attention: you need to load all the fonts that are set, otherwise the renderer will crash
@@ -110,7 +116,11 @@ void BeamNG::WebKit::init(DXContexts& dxc) {
     EA::WebKit::ITextSystem* ts = wk->GetTextSystem();
     ts->Init();
 
+
     EA::WebKit::SocketTransportHandler* sth = wk->GetSocketTransportHandler();
+
+    int e = GetLastError();
+    printf("%d", e);
 
     //BeamNG::Utils::init_system_fonts(wk);
     BeamNG::Utils::add_ttf_font(wk, "Roboto-Regular.ttf");
@@ -131,7 +141,7 @@ void BeamNG::WebKit::init(DXContexts& dxc) {
     v->SetDrawDebugVisuals(true);
     v->ShowInspector(true);
     
-    //v->SetURI("http://");
+    //v->SetURI("http://wwww.beamng.com");
     
     //v->SetURI("about:version");
 
