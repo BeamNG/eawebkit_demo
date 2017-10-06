@@ -1,10 +1,10 @@
 # EAWebKit example
 
-EAWebkit Demo application that is using a DirectX 11 tiled backend for windows. It is highly experimental and not all required features are working yet. Advised to not use in production.
+[EAWebkit](https://gpl.ea.com/eawebkit.html) Demo application that is using a DirectX 11 tiled backend for windows. It is highly experimental and not all required features are working yet. Advised to not use in production.
 
 # Requirements
 
-* Precompiled webkit 15.4.2.0.0 (put the .dll into the Bin64 folder)
+* Precompiled WebKit 15.4.2.0.0 ([download sources here](https://gpl.ea.com/eawebkit.html)) (Compile and put the .dll into the Bin64 folder)
 
 # Quickstart
 
