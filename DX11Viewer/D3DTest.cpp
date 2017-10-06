@@ -1,19 +1,14 @@
 // D3DTest.cpp : Defines the entry point for the application.
 //
 
-#include "stdafx.h"
 #include "D3DTest.h"
 #include "bngWebkit.h"
 #include <Windowsx.h>
 #include "bngUtils.h"
 
-#define MAX_LOADSTRING 100
-
 // Global Variables:
 HINSTANCE g_hInst = nullptr; // current instance
 HWND g_hWnd = nullptr;
-TCHAR g_szTitle[MAX_LOADSTRING]; // The title bar text
-TCHAR g_szWindowClass[MAX_LOADSTRING]; // the main window class name
 D3D_DRIVER_TYPE g_driverType = D3D_DRIVER_TYPE_NULL;
 D3D_FEATURE_LEVEL g_featureLevel = D3D_FEATURE_LEVEL_11_0;
 ID3D11Device* g_pd3dDevice = nullptr;
@@ -30,106 +25,6 @@ XMMATRIX g_World;
 XMMATRIX g_View;
 XMMATRIX g_Projection;
 
-// Forward declarations of functions included in this code module:
-ATOM MyRegisterClass(HINSTANCE hInstance);
-BOOL InitInstance(HINSTANCE, int);
-LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
-HRESULT CompileShaderFromFile(WCHAR*, LPCSTR, LPCSTR, ID3DBlob**);
-HRESULT InitDevice();
-void Render();
-void CleanupDevice();
-
-//
-//
-//
-int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
-                     _In_opt_ HINSTANCE hPrevInstance,
-                     _In_ LPTSTR    lpCmdLine,
-                     _In_ int       nCmdShow)
-{
-	UNREFERENCED_PARAMETER(hPrevInstance);
-	UNREFERENCED_PARAMETER(lpCmdLine);
-
- 	// TODO: Place code here.
-	MSG msg = {0};
-	HACCEL hAccelTable;
-
-	// Initialize global strings
-	LoadString(hInstance, IDS_APP_TITLE, g_szTitle, MAX_LOADSTRING);
-	LoadString(hInstance, IDC_D3DTEST, g_szWindowClass, MAX_LOADSTRING);
-	MyRegisterClass(hInstance);
-
-    SetCurrentDirectoryA(BeamNG::Utils::getExePath().c_str());
-
-	// Perform application initialization:
-	if (!InitInstance (hInstance, nCmdShow))
-	{
-		return FALSE;
-	}
-
-	hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_D3DTEST));
-
-	if ( FAILED(InitDevice() ))
-	{
-		CleanupDevice();
-		return 0;
-	}
-
-    BeamNG::WebKit::DXContexts dxc = { g_pd3dDevice, g_pImmediateContext };
-    dxc.hwnd = g_hWnd;
-    BeamNG::WebKit::init(dxc);
-
-    // fix window size at startup
-    {
-        RECT rect;
-        GetClientRect(g_hWnd, &rect);
-        BeamNG::WebKit::resize(rect.right - rect.left, rect.bottom - rect.top);
-    }
-
-	// Main message loop:
-	while (WM_QUIT != msg.message)
-	{
-		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
-		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-		Render();
-	}
-
-	CleanupDevice();
-
-	return (int) msg.wParam;
-}
-
-
-
-//
-//  FUNCTION: MyRegisterClass()
-//
-//  PURPOSE: Registers the window class.
-//
-ATOM MyRegisterClass(HINSTANCE hInstance)
-{
-	WNDCLASSEX wcex;
-
-	wcex.cbSize = sizeof(WNDCLASSEX);
-
-	wcex.style = CS_HREDRAW | CS_VREDRAW;
-	wcex.lpfnWndProc = WndProc;
-	wcex.cbClsExtra = 0;
-	wcex.cbWndExtra = 0;
-	wcex.hInstance = hInstance;
-	wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_D3DTEST));
-	wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
-	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
-	wcex.lpszMenuName = nullptr;
-	wcex.lpszClassName = g_szWindowClass;
-	wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
-
-	return RegisterClassEx(&wcex);
-}
-
 //
 //   FUNCTION: InitInstance(HINSTANCE, int)
 //
@@ -140,21 +35,17 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 //        In this function, we save the instance handle in a global variable and
 //        create and display the main program window.
 //
-BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
-{
+BOOL InitInstance(HINSTANCE hInstance, int nCmdShow) {
    g_hInst = hInstance; // Store instance handle in our global variable
-
-   g_hWnd = CreateWindow(g_szWindowClass, g_szTitle, WS_OVERLAPPEDWINDOW,
+   g_hWnd = CreateWindow(L"WKD11Viewer", L"EAWebKit DX11 Viewer - use F5 to reload", WS_OVERLAPPEDWINDOW,
       CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
 
-   if (!g_hWnd)
-   {
+   if (!g_hWnd) {
       return FALSE;
    }
 
    ShowWindow(g_hWnd, nCmdShow);
    UpdateWindow(g_hWnd);
-
    return TRUE;
 }
 
@@ -170,28 +61,13 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	int wmId, wmEvent;
 	PAINTSTRUCT ps;
 	HDC hdc;
 
     int xPos = GET_X_LPARAM(lParam);
     int yPos = GET_Y_LPARAM(lParam);
 
-	switch (message)
-	{
-	case WM_COMMAND:
-		wmId    = LOWORD(wParam);
-		wmEvent = HIWORD(wParam);
-		// Parse the menu selections:
-		switch (wmId)
-		{
-		case IDM_EXIT:
-			DestroyWindow(hWnd);
-			break;
-		default:
-			return DefWindowProc(hWnd, message, wParam, lParam);
-		}
-		break;
+	switch (message) {
     case WM_MOUSEMOVE:
         BeamNG::WebKit::mousemove(LOWORD(lParam), HIWORD(lParam));
         break;
@@ -252,13 +128,34 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+ATOM MyRegisterClass(HINSTANCE hInstance)
+{
+    WNDCLASSEX wcex = {};
+
+    wcex.cbSize = sizeof(WNDCLASSEX);
+
+    wcex.style = CS_HREDRAW | CS_VREDRAW;
+    wcex.lpfnWndProc = WndProc;
+    wcex.cbClsExtra = 0;
+    wcex.cbWndExtra = 0;
+    wcex.hInstance = hInstance;
+    //wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_D3DTEST));
+    wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wcex.lpszMenuName = nullptr;
+    wcex.lpszClassName = L"WKD11Viewer";
+    //wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+
+    return RegisterClassEx(&wcex);
+}
+
+
 //
 // Helper for compiling shaders with D3DCompile
 //
 // With VS 11, we could load up prebuilt .cso files instead...
 //
-HRESULT CompileShaderFromFile(WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut)
-{
+HRESULT CompileShaderFromFile(WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut) {
 	HRESULT hr = S_OK;
 
 	DWORD dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
@@ -273,23 +170,17 @@ HRESULT CompileShaderFromFile(WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szS
 	ID3DBlob* pErrorBlob;
 	hr = D3DCompileFromFile(szFileName, nullptr, nullptr, szEntryPoint, szShaderModel,
 		dwShaderFlags, 0, ppBlobOut, &pErrorBlob);
-	if (FAILED(hr))
-	{
+	if (FAILED(hr)) {
 		if (pErrorBlob != nullptr)
 			OutputDebugStringA((char*)pErrorBlob->GetBufferPointer());
 		if (pErrorBlob) pErrorBlob->Release();
 		return hr;
 	}
 	if (pErrorBlob) pErrorBlob->Release();
-
 	return S_OK;
 }
 
-//
-//
-//
-HRESULT InitDevice()
-{
+HRESULT InitDevice() {
 	HRESULT hr = S_OK;
 
 	RECT rc;
@@ -304,8 +195,7 @@ HRESULT InitDevice()
 	createDeviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
-	D3D_DRIVER_TYPE driverTypes[] =
-	{
+	D3D_DRIVER_TYPE driverTypes[] = {
 		D3D_DRIVER_TYPE_HARDWARE,
 		D3D_DRIVER_TYPE_WARP,
 		D3D_DRIVER_TYPE_REFERENCE,
@@ -313,8 +203,7 @@ HRESULT InitDevice()
 	UINT numDriverTypes = ARRAYSIZE(driverTypes);
 
 	// This array defines the ordering of feature levels that D3D should attempt to create.
-	D3D_FEATURE_LEVEL featureLevels[] =
-	{
+    D3D_FEATURE_LEVEL featureLevels[] = {
 		D3D_FEATURE_LEVEL_11_1,
 		D3D_FEATURE_LEVEL_11_0,
 		D3D_FEATURE_LEVEL_10_1,
@@ -336,15 +225,13 @@ HRESULT InitDevice()
 	sd.SampleDesc.Quality = 0;
 	sd.Windowed = TRUE;
 
-	for (UINT driverTypeIndex = 0; driverTypeIndex < numDriverTypes; driverTypeIndex++)
-	{
+	for (UINT driverTypeIndex = 0; driverTypeIndex < numDriverTypes; driverTypeIndex++) {
 		g_driverType = driverTypes[driverTypeIndex];
 
 		hr = D3D11CreateDeviceAndSwapChain(nullptr, g_driverType, nullptr, createDeviceFlags, featureLevels, numFeatureLevels,
 			D3D11_SDK_VERSION, &sd, &g_pSwapChain, &g_pd3dDevice, &g_featureLevel, &g_pImmediateContext);
 
-		if (hr == E_INVALIDARG)
-		{
+		if (hr == E_INVALIDARG) {
 			// DirectX 11.0 platforms will not recognize D3D_FEATURE_LEVEL_11_1 so we need to retry without it
 			hr = D3D11CreateDeviceAndSwapChain(nullptr, g_driverType, nullptr, createDeviceFlags, &featureLevels[1], numFeatureLevels - 1,
 				D3D11_SDK_VERSION, &sd, &g_pSwapChain, &g_pd3dDevice, &g_featureLevel, &g_pImmediateContext);
@@ -382,8 +269,7 @@ HRESULT InitDevice()
 	// Compile the vertex shader
 	ID3DBlob* pVSBlob = nullptr;
 	hr = CompileShaderFromFile(L"D3DTest.fx", "VS", "vs_4_0", &pVSBlob);
-	if (FAILED(hr))
-	{
+	if (FAILED(hr)) {
 		MessageBox(nullptr,
 			L"The FX file cannot be compiled.  Please run this executable from the directory that contains the FX file.", L"Error", MB_OK);
 		return hr;
@@ -391,15 +277,13 @@ HRESULT InitDevice()
 
 	// Create the vertex shader
 	hr = g_pd3dDevice->CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), nullptr, &g_pVertexShader);
-	if (FAILED(hr))
-	{
+	if (FAILED(hr)) {
 		pVSBlob->Release();
 		return hr;
 	}
 
 	// Define the input layout
-	D3D11_INPUT_ELEMENT_DESC layout[] =
-	{
+	D3D11_INPUT_ELEMENT_DESC layout[] = {
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
@@ -418,8 +302,7 @@ HRESULT InitDevice()
 	// Compile the pixel shader
 	ID3DBlob* pPSBlob = nullptr;
 	hr = CompileShaderFromFile(L"D3DTest.fx", "PS", "ps_4_0", &pPSBlob);
-	if (FAILED(hr))
-	{
+	if (FAILED(hr)) {
 		MessageBox(nullptr,
 			L"The FX file cannot be compiled.  Please run this executable from the directory that contains the FX file.", L"Error", MB_OK);
 		return hr;
@@ -432,8 +315,7 @@ HRESULT InitDevice()
 		return hr;
 
 	// Create vertex buffer
-	SimpleVertex vertices[] =
-	{
+	SimpleVertex vertices[] = {
 		{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f) },
 		{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
 		{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT4(0.0f, 1.0f, 1.0f, 1.0f) },
@@ -522,9 +404,6 @@ HRESULT InitDevice()
 	return S_OK;
 }
 
-//
-//
-//
 void Render()
 {	// Update our time
 	static float t = 0.0f;
@@ -577,11 +456,7 @@ void Render()
 	g_pSwapChain->Present(0, 0);
 }
 
-//
-//
-//
-void CleanupDevice()
-{
+void CleanupDevice() {
 	if (g_pImmediateContext) g_pImmediateContext->ClearState();
 
 	if (g_pConstantBuffer) g_pConstantBuffer->Release();
@@ -594,4 +469,48 @@ void CleanupDevice()
 	if (g_pSwapChain) g_pSwapChain->Release();
 	if (g_pImmediateContext) g_pImmediateContext->Release();
 	if (g_pd3dDevice) g_pd3dDevice->Release();
+}
+
+
+
+int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+    UNREFERENCED_PARAMETER(hPrevInstance);
+    UNREFERENCED_PARAMETER(lpCmdLine);
+
+    MyRegisterClass(hInstance);
+    SetCurrentDirectoryA(BeamNG::Utils::getExePath().c_str());
+
+    // Perform application initialization:
+    if (!InitInstance(hInstance, nCmdShow)) {
+        return FALSE;
+    }
+
+    if (FAILED(InitDevice())) {
+        CleanupDevice();
+        return 0;
+    }
+
+    BeamNG::WebKit::DXContexts dxc = { g_pd3dDevice, g_pImmediateContext };
+    dxc.hwnd = g_hWnd;
+    BeamNG::WebKit::init(dxc);
+
+    // fix window size at startup
+    {
+        RECT rect;
+        GetClientRect(g_hWnd, &rect);
+        BeamNG::WebKit::resize(rect.right - rect.left, rect.bottom - rect.top);
+    }
+
+    // Main message loop
+    MSG msg = { 0 };
+    while (WM_QUIT != msg.message) {
+        if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+        Render();
+    }
+
+    CleanupDevice();
+    return (int)msg.wParam;
 }
