@@ -7,6 +7,3 @@ IF EXIST vs2015.txt set VSVERSION=vs2015
 
 :: without unified build (agglomerated build)
 %~dp0\premake5.exe %VSVERSION% %*
-
-:: with 8 cores optimized (experimental, untested)
-::%~dp0\premake5.exe --compilationunit=8 %VSVERSION% %*
