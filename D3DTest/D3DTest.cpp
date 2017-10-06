@@ -3,8 +3,9 @@
 
 #include "stdafx.h"
 #include "D3DTest.h"
-#include "eawebkit.h"
+#include "bngWebkit.h"
 #include <Windowsx.h>
+#include "bngUtils.h"
 
 #define MAX_LOADSTRING 100
 
@@ -58,6 +59,8 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 	LoadString(hInstance, IDC_D3DTEST, g_szWindowClass, MAX_LOADSTRING);
 	MyRegisterClass(hInstance);
 
+    SetCurrentDirectoryA(BeamNG::Utils::getExePath().c_str());
+
 	// Perform application initialization:
 	if (!InitInstance (hInstance, nCmdShow))
 	{
@@ -72,15 +75,15 @@ int APIENTRY _tWinMain(_In_ HINSTANCE hInstance,
 		return 0;
 	}
 
-    DXContexts dxc = { g_pd3dDevice, g_pImmediateContext };
+    BeamNG::WebKit::DXContexts dxc = { g_pd3dDevice, g_pImmediateContext };
     dxc.hwnd = g_hWnd;
-    ui_init(dxc);
+    BeamNG::WebKit::init(dxc);
 
     // fix window size at startup
     {
         RECT rect;
         GetClientRect(g_hWnd, &rect);
-        ui_resize(rect.right - rect.left, rect.bottom - rect.top);
+        BeamNG::WebKit::resize(rect.right - rect.left, rect.bottom - rect.top);
     }
 
 	// Main message loop:
@@ -190,44 +193,44 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		}
 		break;
     case WM_MOUSEMOVE:
-        ui_mousemove(LOWORD(lParam), HIWORD(lParam));
+        BeamNG::WebKit::mousemove(LOWORD(lParam), HIWORD(lParam));
         break;
     case WM_LBUTTONDOWN:
-        ui_mousebutton(xPos, yPos, 0, true);
+        BeamNG::WebKit::mousebutton(xPos, yPos, 0, true);
         break;
     case WM_LBUTTONUP:
-        ui_mousebutton(xPos, yPos, 0, false);
+        BeamNG::WebKit::mousebutton(xPos, yPos, 0, false);
         break;
     case WM_RBUTTONDOWN:
-        ui_mousebutton(xPos, yPos, 2, true);
+        BeamNG::WebKit::mousebutton(xPos, yPos, 2, true);
         break;
     case WM_RBUTTONUP:
-        ui_mousebutton(xPos, yPos, 2, false);
+        BeamNG::WebKit::mousebutton(xPos, yPos, 2, false);
         break;
     case WM_MBUTTONDOWN:
-        ui_mousebutton(xPos, yPos, 1, true);
+        BeamNG::WebKit::mousebutton(xPos, yPos, 1, true);
         break;
     case WM_MBUTTONUP:
-        ui_mousebutton(xPos, yPos, 1, false);
+        BeamNG::WebKit::mousebutton(xPos, yPos, 1, false);
         break;
     case WM_MOUSEWHEEL: {
         int fwKeys = GET_KEYSTATE_WPARAM(wParam);
         int zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
-        ui_mousewheel(xPos, yPos, fwKeys, zDelta);
+        BeamNG::WebKit::mousewheel(xPos, yPos, fwKeys, zDelta);
         break;
     }
     case WM_CHAR:
-        ui_keyboard(wParam, true, true);
+        BeamNG::WebKit::keyboard(wParam, true, true);
         break;
     case WM_KEYDOWN:
         if (wParam == VK_F5) {
-            ui_reload();
+            BeamNG::WebKit::reload();
             break;
         }
-        ui_keyboard(wParam, false, true);
+        BeamNG::WebKit::keyboard(wParam, false, true);
         break;
     case WM_KEYUP:
-        ui_keyboard(wParam, false, false);
+        BeamNG::WebKit::keyboard(wParam, false, false);
         break;
 
     case WM_PAINT:
@@ -238,7 +241,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_SIZE:
         RECT rect;
         GetClientRect(hWnd, &rect);
-        ui_resize(rect.right - rect.left, rect.bottom - rect.top);
+        BeamNG::WebKit::resize(rect.right - rect.left, rect.bottom - rect.top);
         break;
 	case WM_DESTROY:
 		PostQuitMessage(0);
@@ -568,7 +571,7 @@ void Render()
     g_pImmediateContext->IASetInputLayout(g_pVertexLayout);
 	g_pImmediateContext->DrawIndexed(36, 0, 0);
 
-    ui_update();
+    BeamNG::WebKit::update();
 
 	// Present our back buffer to our front buffer
 	g_pSwapChain->Present(0, 0);

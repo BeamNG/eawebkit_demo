@@ -26,6 +26,11 @@ THE SOFTWARE.
 #pragma once
 
 #include <d3d11.h>
+#include <EAWebKit\EAWebKit.h>
+#include <EAWebKit\EAWebKitView.h>
+
+namespace BeamNG {
+namespace WebKit {
 
 struct DXContexts {
     ID3D11Device* dev = nullptr;
@@ -39,11 +44,17 @@ struct DXContexts {
     HWND hwnd = 0;
 };
 
-void ui_init(DXContexts& dxc);
-void ui_update();
-void ui_resize(int width, int height);
-void ui_mousemove(int x, int y);
-void ui_mousebutton(int x, int y, int btn, bool depressed);
-void ui_mousewheel(int x, int y, int keys, int delta);
-void ui_keyboard(int id, bool ischar, bool depressed);
-void ui_reload();
+extern EA::WebKit::EAWebKitLib* wk;
+extern EA::WebKit::View* v;
+
+void init(DXContexts& dxc);
+void update();
+void resize(int width, int height);
+void mousemove(int x, int y);
+void mousebutton(int x, int y, int btn, bool depressed);
+void mousewheel(int x, int y, int keys, int delta);
+void keyboard(int id, bool ischar, bool depressed);
+void reload();
+
+} // namespace WebKit
+} // namespace BeamNG
