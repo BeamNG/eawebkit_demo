@@ -5,7 +5,8 @@ project ("DX11Viewer")
   }
   links {
     'd3d11.lib',
-    'd3dcompiler.lib'
+    'd3dcompiler.lib',
+    'ws2_32.lib'
   }
   defines {
   }
