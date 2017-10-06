@@ -1,6 +1,6 @@
 # EAWebKit example
 
-EAWebkit Demo application using DX11 for windows
+EAWebkit Demo application using DX11 for windows. It is highly experimental and not all required features are working yet. Advised to not use in production.
 
 # Requirements
 
@@ -15,3 +15,9 @@ EAWebkit Demo application using DX11 for windows
 # License
 
 The thin wrapper from BeamNG is licensed under MIT and the files are marked accordingly.
+
+# Screenshot
+
+How it looks like:
+
+![alt text](https://raw.githubusercontent.com/beamng/eawebkit_demo/master/contrib/screen.png)
