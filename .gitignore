@@ -10,7 +10,8 @@ gnore Visual Studio temporary files, build results, and
 
 [Dd]ebug/
 [Rr]elease/
-x64/
+Bin64/
+Bin32/
 build/
 .vs/
 #[Bb]in/
