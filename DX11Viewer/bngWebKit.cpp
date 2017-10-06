@@ -32,6 +32,7 @@ THE SOFTWARE.
 
 #include <d3d11.h>
 #include <array>
+#include "bngThreading.h"
 
 HRESULT CompileShaderFromFile(WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut);
 
@@ -58,7 +59,7 @@ struct EA::WebKit::AppCallbacks callbacks = {
     EAWebkitSetCookieCallback_
 };
 
-class EaWebkitClient : public EA::WebKit::EAWebKitClient {
+class BeamNGWebkitClient : public EA::WebKit::EAWebKitClient {
 public:
     virtual void DebugLog(EA::WebKit::DebugLogInfo& l) override {
         printf("%s\n", l.mpLogText);
@@ -71,7 +72,8 @@ void BeamNG::WebKit::init(DXContexts& dxc) {
     
     // init the systems: using DefaultAllocator, DefaultFileSystem, no text/font support, DefaultThreadSystem
     struct EA::WebKit::AppSystems systems = { nullptr };
-    systems.mEAWebkitClient = new EaWebkitClient();
+    systems.mThreadSystem = new BeamNG::Threading::Win64ThreadSystem();
+    systems.mEAWebkitClient = new BeamNGWebkitClient();
 
     typedef EA::WebKit::EAWebKitLib* (*PF_CreateEAWebkitInstance)(void);
     PF_CreateEAWebkitInstance create_Webkit_instance = nullptr;
@@ -110,15 +112,15 @@ void BeamNG::WebKit::init(DXContexts& dxc) {
 
     EA::WebKit::SocketTransportHandler* sth = wk->GetSocketTransportHandler();
 
-    //init_system_fonts(dxc);
-    //add_ttf_font("C:\\windows\\Fonts\\arial.ttf");
+    //BeamNG::Utils::init_system_fonts(wk);
+    BeamNG::Utils::add_ttf_font(wk, "Roboto-Regular.ttf");
 
 
     v = wk->CreateView();
 
     EA::WebKit::ViewParameters vp;
     vp.mHardwareRenderer = new BeamNG::Renderer::DX11Renderer(dxc);
-    vp.mDisplaySurface = new BeamNG::Renderer::DX11Surface(dxc);
+    vp.mDisplaySurface = nullptr; // new BeamNG::Renderer::DX11Surface(dxc);
     vp.mWidth = 1920;
     vp.mHeight = 768;
     vp.mBackgroundColor = 0xffffffff;
