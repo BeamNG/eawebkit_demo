@@ -72,7 +72,7 @@ void BeamNG::WebKit::init(DXContexts& dxc) {
     
     // init the systems: using DefaultAllocator, DefaultFileSystem, no text/font support, DefaultThreadSystem
     struct EA::WebKit::AppSystems systems = { nullptr };
-    systems.mThreadSystem = new BeamNG::Threading::Win64ThreadSystem();
+    //systems.mThreadSystem = new BeamNG::Threading::Win64ThreadSystem(); // TODO: not working yet, crashing :(
     systems.mEAWebkitClient = new BeamNGWebkitClient();
 
     typedef EA::WebKit::EAWebKitLib* (*PF_CreateEAWebkitInstance)(void);
@@ -97,33 +97,36 @@ void BeamNG::WebKit::init(DXContexts& dxc) {
     wk = create_Webkit_instance();
     wk->Init(&callbacks, &systems);
 
-    EA::WebKit::Parameters& params = wk->GetParameters();
-    params.mEAWebkitLogLevel = 1337;
-    params.mHttpManagerLogLevel = 1337;
-    params.mRemoteWebInspectorPort = 8282;
-    params.mReportJSExceptionCallstacks = true;
-
-    // attention: you need to load all the fonts that are set, otherwise the renderer will crash
-    wcscpy((wchar_t*)params.mFontFamilyStandard, L"Roboto");
-    wcscpy((wchar_t*)params.mFontFamilySerif, L"Roboto");
-    wcscpy((wchar_t*)params.mFontFamilyMonospace, L"Roboto");
-    wcscpy((wchar_t*)params.mFontFamilyCursive, L"Roboto");
-    wcscpy((wchar_t*)params.mFontFamilyFantasy, L"Roboto");
-
-    wk->SetParameters(params);
 
 
     EA::WebKit::ITextSystem* ts = wk->GetTextSystem();
     ts->Init();
 
 
+    EA::WebKit::Parameters& params = wk->GetParameters();
+    params.mEAWebkitLogLevel = 1337;
+    params.mHttpManagerLogLevel = 1337;
+    params.mRemoteWebInspectorPort = 0; // 8282;
+    params.mReportJSExceptionCallstacks = true;
+    //params.mVerifySSLCert = false;
+
+    // attention: you need to load all the fonts that are set, otherwise the renderer will crash
+    wcscpy((wchar_t*)params.mFontFamilyStandard, L"Roboto");
+    wcscpy((wchar_t*)params.mFontFamilySerif, L"Roboto");
+    wcscpy((wchar_t*)params.mFontFamilySansSerif, L"Roboto");
+    wcscpy((wchar_t*)params.mFontFamilyMonospace, L"Roboto");
+    wcscpy((wchar_t*)params.mFontFamilyCursive, L"Roboto");
+    wcscpy((wchar_t*)params.mFontFamilyFantasy, L"Roboto");
+    wcscpy((wchar_t*)params.mSystemFont, L"Roboto");
+    params.mSystemFontBold = true;
+
+    wk->SetParameters(params);
+
+
     EA::WebKit::SocketTransportHandler* sth = wk->GetSocketTransportHandler();
 
-    int e = GetLastError();
-    printf("%d", e);
-
     //BeamNG::Utils::init_system_fonts(wk);
-    BeamNG::Utils::add_ttf_font(wk, "Roboto-Regular.ttf");
+    //BeamNG::Utils::add_ttf_font(wk, "Roboto-Regular.ttf");
 
 
     v = wk->CreateView();
@@ -134,14 +137,14 @@ void BeamNG::WebKit::init(DXContexts& dxc) {
     vp.mWidth = 1920;
     vp.mHeight = 768;
     vp.mBackgroundColor = 0xffffffff;
-    vp.mTileSize = 512;
+    vp.mTileSize = 256; // 512;
     vp.mUseTiledBackingStore = true;
     v->InitView(vp);
 
-    v->SetDrawDebugVisuals(true);
-    v->ShowInspector(true);
+    //v->SetDrawDebugVisuals(true);
+    //v->ShowInspector(true);
     
-    //v->SetURI("http://wwww.beamng.com");
+    //v->SetURI("http://www.");
     
     //v->SetURI("about:version");
 
@@ -225,6 +228,8 @@ void BeamNG::WebKit::init(DXContexts& dxc) {
         desc.Filter = D3D11_FILTER_MIN_MAG_LINEAR_MIP_POINT;
         dxc.dev->CreateSamplerState(&desc, &dxc.samplerState);
     }
+
+    //wk->AddAllowedDomainInfo(""); // TODO
 }
 
 void BeamNG::WebKit::update() {
@@ -235,6 +240,8 @@ void BeamNG::WebKit::update() {
     v->ForceInvalidateFullView();
     v->Paint();
 
+
+    //v->EvaluateJavaScript("console.log('hello world!');");
     //v->SaveSurfacePNG("test.png");
 }
 
