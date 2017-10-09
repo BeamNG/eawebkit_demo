@@ -24,6 +24,10 @@ THE SOFTWARE.
 */
 #include "EAWebKit\EAWebKitThreadInterface.h"
 
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+
 namespace BeamNG {
 
 namespace Threading {
@@ -37,15 +41,19 @@ public:
 	bool TryLock();
 	void Unlock();
 private:
-	int mLockCount = 0;
+    std::mutex m_mutex;
 };
 
 class Win64ThreadCondition : public EA::WebKit::IThreadCondition {
 public:
+    Win64ThreadCondition();
 	void Wait(EA::WebKit::IMutex* mutex);
 	bool TimedWait(EA::WebKit::IMutex* mutex, double relativeTimeMS);
 	void Signal(bool broadcast);
 private:
+    std::condition_variable m_cond_var;
+    std::mutex m_mutex;
+    std::unique_lock<std::mutex> m_lock;
 };
 
 
@@ -54,15 +62,17 @@ public:
 	virtual EA::WebKit::ThreadId Begin(EA::WebKit::ThreadFunc,void* pThreadContext, void* pUserData);
 	virtual void WaitForEnd(intptr_t* result);
 	virtual void SetName(const char* pName);
+protected:
+    std::thread m_thread;
 };
 
 class Win64ThreadLocalStorage : public EA::WebKit::IThreadLocalStorage {
 public:
     Win64ThreadLocalStorage();
-	virtual void* GetValue();
-	bool SetValue(void* pData);
+    virtual void* GetValue() { return m_value; }
+    bool SetValue(void* pData) { m_value = pData; return true; }
 private:
-	void* m_value;
+    void* m_value;
 };
 
 class Win64ThreadSystem : public EA::WebKit::IThreadSystem {
@@ -82,6 +92,8 @@ public:
 	virtual bool IsMainThread();
 	virtual void YieldThread();
 	virtual void SleepThread(uint32_t ms);
+protected:
+    std::thread::id main_thread_id;
 };
 
 
