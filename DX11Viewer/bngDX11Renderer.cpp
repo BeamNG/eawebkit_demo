@@ -189,6 +189,7 @@ BeamNG::Renderer::DX11Surface::~DX11Surface()
 
 void BeamNG::Renderer::DX11Surface::Lock(SurfaceDescriptor *pSDOut, const EA::WebKit::IntRect *rect /*= NULL*/)
 {
+    if (!tex) return;
     // TODO rect
     HRESULT res = dxc.ctx->Map(tex, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
     assert(SUCCEEDED(res));
