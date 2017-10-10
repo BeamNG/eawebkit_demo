@@ -60,9 +60,15 @@ struct EA::WebKit::AppCallbacks callbacks = {
 };
 
 class BeamNGWebkitClient : public EA::WebKit::EAWebKitClient {
+    FILE* f = nullptr;
 public:
     virtual void DebugLog(EA::WebKit::DebugLogInfo& l) override {
-        printf("%s\n", l.mpLogText);
+        if (!f) {
+            f = fopen("eawebkit.log.txt", "w");
+            if (!f) return;
+        }
+        fprintf(f, "%s\n", l.mpLogText);
+        fflush(f);
         OutputDebugStringA(l.mpLogText);
         OutputDebugStringA("\n");
     }
@@ -72,7 +78,7 @@ void BeamNG::WebKit::init(DXContexts& dxc) {
     
     // init the systems: using DefaultAllocator, DefaultFileSystem, no text/font support, DefaultThreadSystem
     struct EA::WebKit::AppSystems systems = { nullptr };
-    //systems.mThreadSystem = new BeamNG::Threading::Win64ThreadSystem(); // TODO: not working yet, crashing :(
+    systems.mThreadSystem = new BeamNG::Threading::Win64ThreadSystem(); // TODO: not working yet, crashing :(
     systems.mEAWebkitClient = new BeamNGWebkitClient();
 
     typedef EA::WebKit::EAWebKitLib* (*PF_CreateEAWebkitInstance)(void);
