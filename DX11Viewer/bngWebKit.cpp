@@ -78,7 +78,11 @@ void BeamNG::WebKit::init(DXContexts& dxc) {
     typedef EA::WebKit::EAWebKitLib* (*PF_CreateEAWebkitInstance)(void);
     PF_CreateEAWebkitInstance create_Webkit_instance = nullptr;
 
+#ifdef _DEBUG
+    HMODULE wdll = LoadLibraryA("EAWebkitd.dll");
+#else
     HMODULE wdll = LoadLibraryA("EAWebkit.dll");
+#endif // _DEBUG
     if (wdll != nullptr) {
         create_Webkit_instance = reinterpret_cast<PF_CreateEAWebkitInstance>(GetProcAddress(wdll, "CreateEAWebkitInstance"));
     }
