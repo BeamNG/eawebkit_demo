@@ -126,7 +126,7 @@ void BeamNG::WebKit::init(DXContexts& dxc) {
     EA::WebKit::Parameters& params = wk->GetParameters();
     params.mEAWebkitLogLevel = 1337;
     params.mHttpManagerLogLevel = 1337;
-    params.mRemoteWebInspectorPort = 8282;
+    params.mRemoteWebInspectorPort = 0; // 8282;
     params.mReportJSExceptionCallstacks = true;
     //params.mJavaScriptStackSize = 1233337;
     //params.mVerifySSLCert = false;
@@ -162,10 +162,10 @@ void BeamNG::WebKit::init(DXContexts& dxc) {
     vp.mUseTiledBackingStore = true;
     v->InitView(vp);
 
-    v->SetDrawDebugVisuals(true);
-    v->ShowInspector(true);
+    //v->SetDrawDebugVisuals(true);
+    //v->ShowInspector(true);
     
-    v->SetURI("http://www.focus.de");
+    v->SetURI(dxc.startURL.c_str()); // "http://html5test.com/");
     
     //v->SetURI("about:version");
 

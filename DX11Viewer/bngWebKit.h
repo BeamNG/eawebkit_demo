@@ -29,6 +29,8 @@ THE SOFTWARE.
 #include <EAWebKit\EAWebKit.h>
 #include <EAWebKit\EAWebKitView.h>
 
+#include <string>
+
 namespace BeamNG {
 namespace WebKit {
 
@@ -42,6 +44,7 @@ struct DXContexts {
     ID3D11PixelShader *pShader = nullptr;
     ID3D11SamplerState *samplerState = nullptr;
     HWND hwnd = 0;
+    std::string startURL;
 };
 
 extern EA::WebKit::EAWebKitLib* wk;

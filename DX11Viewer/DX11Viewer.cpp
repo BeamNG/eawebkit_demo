@@ -503,6 +503,18 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     UNREFERENCED_PARAMETER(hPrevInstance);
     UNREFERENCED_PARAMETER(lpCmdLine);
 
+    std::string startURL = "http://html5test.com/";
+    {
+        int argCount = 0;
+        LPWSTR* args = CommandLineToArgvW(GetCommandLine(), &argCount);
+        if (args && argCount > 1) {
+            // only use the first
+            std::wstring ws(args[1]);
+            startURL = std::string(ws.begin(), ws.end());
+            LocalFree(args);
+        }
+    }
+
     MyRegisterClass(hInstance);
     SetCurrentDirectoryA(BeamNG::Utils::getExePath().c_str());
 
@@ -518,6 +530,7 @@ int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
     BeamNG::WebKit::DXContexts dxc = { g_pd3dDevice, g_pImmediateContext };
     dxc.hwnd = g_hWnd;
+    dxc.startURL = startURL;
     BeamNG::WebKit::init(dxc);
 
     // fix window size at startup
