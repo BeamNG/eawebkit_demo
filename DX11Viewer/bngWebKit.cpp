@@ -53,8 +53,16 @@ double EAWebkitTimerCallback_() {
 double EAWebkitMonotonicTimerCallback_() {
     return EAWebkitTimerCallback_();
 };
+
+bool   EAWebkitCryptographicallyRandomValueCallback(unsigned char *buffer, size_t length) {
+    HCRYPTPROV hCryptProv = 0;
+    CryptAcquireContext(&hCryptProv, 0, MS_DEF_PROV, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT);
+    CryptGenRandom(hCryptProv, length, buffer);
+    CryptReleaseContext(hCryptProv, 0);
+    return true;  // Returns true if no error, else false
+}
+
 void*  EAWebkitStackBaseCallback_() { return nullptr; };
-bool   EAWebkitCryptographicallyRandomValueCallback_(unsigned char *buffer, size_t length) { return false; } // Returns true if no error, else false
 void   EAWebkitGetCookiesCallback_(const char16_t* pUrl, EA::WebKit::EASTLFixedString16Wrapper& result, uint32_t flags) { }
 bool   EAWebkitSetCookieCallback_(const EA::WebKit::CookieEx& cookie) { return false;  }
 
@@ -64,7 +72,7 @@ struct EA::WebKit::AppCallbacks callbacks = {
     EAWebkitTimerCallback_,
     EAWebkitMonotonicTimerCallback_,
     nullptr, // EAWebkitStackBaseCallback_,
-    nullptr, // EAWebkitCryptographicallyRandomValueCallback_,
+    EAWebkitCryptographicallyRandomValueCallback,
     nullptr, // EAWebkitGetCookiesCallback_,
     nullptr, // EAWebkitSetCookieCallback_
 };
@@ -129,7 +137,7 @@ void BeamNG::WebKit::init(DXContexts& dxc) {
     params.mRemoteWebInspectorPort = 0; // 8282;
     params.mReportJSExceptionCallstacks = true;
     //params.mJavaScriptStackSize = 1233337;
-    //params.mVerifySSLCert = false;
+    params.mVerifySSLCert = false;
 
     // attention: you need to load all the fonts that are set, otherwise the renderer will crash
     wcscpy((wchar_t*)params.mFontFamilyStandard, L"Roboto");
