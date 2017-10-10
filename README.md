@@ -1,6 +1,6 @@
 # EAWebKit example
 
-[EAWebkit](https://gpl.ea.com/eawebkit.html) Demo application that is using a DirectX 11 tiled backend for windows. It is highly experimental and not all required features are working yet. Advised to not use in production.
+[EAWebKit](https://gpl.ea.com/eawebkit.html) Demo application that is using a DirectX 11 tiled backend for windows. It is highly experimental and not all required features are working yet. Advised to not use in production.
 
 # Requirements
 
