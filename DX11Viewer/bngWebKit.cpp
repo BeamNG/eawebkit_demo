@@ -41,8 +41,18 @@ EA::WebKit::View* BeamNG::WebKit::v = nullptr;
 
 
 // Callbacks
-double EAWebkitTimerCallback_() { return 0; }
-double EAWebkitMonotonicTimerCallback_() { return 0; };
+double EAWebkitTimerCallback_() { 
+    LARGE_INTEGER frequency;
+    ::QueryPerformanceFrequency(&frequency);
+
+    LARGE_INTEGER start;
+    ::QueryPerformanceCounter(&start);
+
+    return static_cast<double>(start.QuadPart) / frequency.QuadPart;
+}
+double EAWebkitMonotonicTimerCallback_() {
+    return EAWebkitTimerCallback_();
+};
 void*  EAWebkitStackBaseCallback_() { return nullptr; };
 bool   EAWebkitCryptographicallyRandomValueCallback_(unsigned char *buffer, size_t length) { return false; } // Returns true if no error, else false
 void   EAWebkitGetCookiesCallback_(const char16_t* pUrl, EA::WebKit::EASTLFixedString16Wrapper& result, uint32_t flags) { }
@@ -53,10 +63,10 @@ bool   EAWebkitSetCookieCallback_(const EA::WebKit::CookieEx& cookie) { return f
 struct EA::WebKit::AppCallbacks callbacks = {
     EAWebkitTimerCallback_,
     EAWebkitMonotonicTimerCallback_,
-    EAWebkitStackBaseCallback_,
-    EAWebkitCryptographicallyRandomValueCallback_,
-    EAWebkitGetCookiesCallback_,
-    EAWebkitSetCookieCallback_
+    nullptr, // EAWebkitStackBaseCallback_,
+    nullptr, // EAWebkitCryptographicallyRandomValueCallback_,
+    nullptr, // EAWebkitGetCookiesCallback_,
+    nullptr, // EAWebkitSetCookieCallback_
 };
 
 class BeamNGWebkitClient : public EA::WebKit::EAWebKitClient {
@@ -116,8 +126,9 @@ void BeamNG::WebKit::init(DXContexts& dxc) {
     EA::WebKit::Parameters& params = wk->GetParameters();
     params.mEAWebkitLogLevel = 1337;
     params.mHttpManagerLogLevel = 1337;
-    params.mRemoteWebInspectorPort = 0; // 8282;
+    params.mRemoteWebInspectorPort = 8282;
     params.mReportJSExceptionCallstacks = true;
+    //params.mJavaScriptStackSize = 1233337;
     //params.mVerifySSLCert = false;
 
     // attention: you need to load all the fonts that are set, otherwise the renderer will crash
@@ -151,14 +162,14 @@ void BeamNG::WebKit::init(DXContexts& dxc) {
     vp.mUseTiledBackingStore = true;
     v->InitView(vp);
 
-    //v->SetDrawDebugVisuals(true);
-    //v->ShowInspector(true);
+    v->SetDrawDebugVisuals(true);
+    v->ShowInspector(true);
     
-    //v->SetURI("http://www.");
+    v->SetURI("http://www.focus.de");
     
     //v->SetURI("about:version");
 
-#if 1
+#if 0
     std::string exe_path = BeamNG::Utils::replaceAll(BeamNG::Utils::getExePath(), "\\", "/");
     std::string html_path = "file:///" + exe_path + "/test.html";
     v->SetURI(html_path.c_str());
@@ -249,7 +260,6 @@ void BeamNG::WebKit::update() {
     
     v->ForceInvalidateFullView();
     v->Paint();
-
 
     //v->EvaluateJavaScript("console.log('hello world!');");
     //v->SaveSurfacePNG("test.png");
