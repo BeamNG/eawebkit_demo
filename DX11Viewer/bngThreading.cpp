@@ -46,29 +46,29 @@ void BeamNG::Threading::Win64Mutex::Unlock() {
     m_mutex.unlock();
 }
 
-BeamNG::Threading::Win64ThreadCondition::Win64ThreadCondition()
-    : m_lock(m_mutex)
-{
-
+BeamNG::Threading::Win64ThreadCondition::Win64ThreadCondition() {
 }
 
-void BeamNG::Threading::Win64ThreadCondition::Wait(EA::WebKit::IMutex* mutex)
-{
+void BeamNG::Threading::Win64ThreadCondition::Wait(EA::WebKit::IMutex* _mutex) {
+    Win64Mutex* mutex = dynamic_cast<Win64Mutex*>(_mutex);
+    if (!mutex) return;
+    std::unique_lock<std::mutex> m_lock(mutex->m_mutex);
     m_cond_var.wait(m_lock);
 }
 
-bool BeamNG::Threading::Win64ThreadCondition::TimedWait(EA::WebKit::IMutex* mutex, double relativeTimeMS)
-{
+bool BeamNG::Threading::Win64ThreadCondition::TimedWait(EA::WebKit::IMutex* _mutex, double relativeTimeMS) {
+    Win64Mutex* mutex = dynamic_cast<Win64Mutex*>(_mutex);
+    if (!mutex) return false;
+    std::unique_lock<std::mutex> m_lock(mutex->m_mutex);
+
     std::cv_status status = m_cond_var.wait_for(m_lock, std::chrono::milliseconds((long)relativeTimeMS));
     return status == std::cv_status::no_timeout; // what return means???
 }
 
-void BeamNG::Threading::Win64ThreadCondition::Signal(bool broadcast)
-{
+void BeamNG::Threading::Win64ThreadCondition::Signal(bool broadcast) {
     if (broadcast) {
         m_cond_var.notify_all();
-    }
-    else {
+    } else {
         m_cond_var.notify_one();
     }
 }

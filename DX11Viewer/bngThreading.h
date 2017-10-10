@@ -35,11 +35,13 @@ namespace Threading {
 class Win64Mutex : public EA::WebKit::IMutex {
 public:
 	friend class DefaultThreadCondition;
+    friend class Win64ThreadCondition;
     Win64Mutex();
     virtual ~Win64Mutex();
     void Lock();
 	bool TryLock();
 	void Unlock();
+
 private:
     std::mutex m_mutex;
 };
@@ -52,8 +54,6 @@ public:
 	void Signal(bool broadcast);
 private:
     std::condition_variable m_cond_var;
-    std::mutex m_mutex;
-    std::unique_lock<std::mutex> m_lock;
 };
 
 
